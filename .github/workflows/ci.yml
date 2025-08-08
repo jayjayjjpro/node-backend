@@ -47,7 +47,7 @@ jobs:
             sleep 2
           done
 
-      - name: Create tables
+      - name: Create tables and seed data
         run: |
           psql -h localhost -U postgres -d restaurants_db -c "
           CREATE TABLE IF NOT EXISTS restaurants (
@@ -55,7 +55,14 @@ jobs:
             name VARCHAR(100) NOT NULL,
             cuisine VARCHAR(50),
             rating DECIMAL(2, 1)
-          );"
+          );
+
+          TRUNCATE TABLE restaurants RESTART IDENTITY CASCADE;
+
+          INSERT INTO restaurants (name, cuisine, rating)
+          VALUES
+            ('Testaurant', 'Italian', 4.5),
+            ('Mock Bistro', 'French', 4.2);"
         env:
           PGPASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
 
