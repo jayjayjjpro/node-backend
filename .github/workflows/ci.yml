@@ -37,6 +37,28 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          until pg_isready -h localhost -p 5432 -U postgres; do
+            echo "Waiting for postgres..."
+            sleep 2
+          done
+
+      - name: Create tables
+        run: |
+          psql -h localhost -U postgres -d restaurants_db -c "
+          CREATE TABLE IF NOT EXISTS restaurants (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(100) NOT NULL,
+            cuisine VARCHAR(50),
+            rating DECIMAL(2, 1)
+          );"
+        env:
+          PGPASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+
       - name: Run tests
         run: npm test
         env:
